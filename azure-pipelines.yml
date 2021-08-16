@@ -28,14 +28,19 @@ steps:
     pip install -r pip-sample/requirements.txt
   displayName: 'Install dependencies'
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'goof-python-snyk'
-    testType: 'app'
-    monitorWhen: 'never'
-    failOnIssues: true
-    projectName: '20210816'
-    organization: '87484fa8-0539-4092-8b4a-8d3484e14da1'
+- script: |
+    npm install
+    displayName: 'npm install'
+- script: |
+    sudo npm install -g snyk
+    # create variable in Pipelines called 'SNYK_TOKEN' and securely save your Snyk token value
+    # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables
+    sudo snyk auth $(SNYK_TOKEN)
+    displayName: 'install snyk'
+- script: |
+    cd pip-sample && sudo snyk test
+    displayName: 'snyk SCA'
+    continueOnError: true
 
 - script: |
     pip install pytest pytest-azurepipelines
